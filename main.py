@@ -24,48 +24,54 @@ class Game:
         self.player_rect = self.player_surface.get_rect(midbottom = (80, 300))
         self.player_gravity = 0
 
+        self.game_active = True
+
     def run(self):
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
-
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.player_rect.collidepoint(event.pos):
-                        print('collision')
-                        self.player_gravity = -20
                 
-                if event.type == pygame.KEYDOWN and self.player_rect.bottom >= 300:
-                    if event.key == pygame.K_SPACE:
-                        self.player_gravity = -20      
+                if self.game_active:
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if self.player_rect.collidepoint(event.pos):
+                            print('collision')
+                            self.player_gravity = -20
+                    
+                    if event.type == pygame.KEYDOWN and self.player_rect.bottom >= 300:
+                        if event.key == pygame.K_SPACE:
+                            self.player_gravity = -20     
+                else:
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                        self.game_active = True 
+                        self.snail_rect.left = 800
 
-            self.screen.fill('black')
+            if self.game_active:
+                self.screen.fill('black')
+                self.screen.blit(self.sky_surface, (0, 0))
+                self.screen.blit(self.ground_surface, (0, 300))
+                pygame.draw.rect(self.screen, '#c0e8eC', self.score_rect)
+                pygame.draw.rect(self.screen, '#c0e8eC', self.score_rect, 10)
+                self.screen.blit(self.score_surface, self.score_rect)
+        
 
-            self.screen.blit(self.sky_surface, (0, 0))
-            self.screen.blit(self.ground_surface, (0, 300))
+                self.snail_rect.x -= 4
+                if self.snail_rect.right <= 0: self.snail_rect.left = 800
+                self.screen.blit(self.snail_surface, self.snail_rect)
 
-            pygame.draw.rect(self.screen, '#c0e8eC', self.score_rect)
-            pygame.draw.rect(self.screen, '#c0e8eC', self.score_rect, 10)
-            # pygame.draw.line(self.screen, 'Red', pygame.mouse.get_pos(), (800, 400))
-            self.screen.blit(self.score_surface, self.score_rect)
-    
+                #PLAYER
+                self.player_gravity += 1
+                self.player_rect.y += self.player_gravity
+                if self.player_rect.bottom >= 300:
+                    self.player_rect.bottom = 300
+                self.screen.blit(self.player_surface, self.player_rect)
+            
+                if self.snail_rect.colliderect(self.player_rect):
+                    self.game_active = False
+            else:
 
-            self.snail_rect.x -= 4
-            if self.snail_rect.right <= 0: self.snail_rect.left = 800
-            self.screen.blit(self.snail_surface, self.snail_rect)
-
-            #PLAYER
-            self.player_gravity += 1
-            self.player_rect.y += self.player_gravity
-            if self.player_rect.bottom >= 300:
-                self.player_rect.bottom = 300
-            self.screen.blit(self.player_surface, self.player_rect)
-          
-            if self.snail_rect.colliderect(self.player_rect):
-                pygame.quit()
-                exit()
-
+                self.screen.fill('Yellow')
 
             pygame.display.update()
             self.clock.tick(60)
